@@ -18,7 +18,10 @@ import {
   Landmark,
   Scale,
   Zap,
-  RotateCcw
+  RotateCcw,
+  FileDown,
+  Download,
+  Printer
 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { DifficultyLevel, QuizSet, SubjectCategory, QuizMode } from '../types';
@@ -35,6 +38,7 @@ import {
   getQuestionsByCategory, 
   convertQuizQuestionToQuestion 
 } from '../data/quizData';
+import { PdfExportDialog } from './modals/PdfExportDialog';
 
 export const PublicEnterprisesScreen: React.FC = () => {
   const { 
@@ -63,6 +67,11 @@ export const PublicEnterprisesScreen: React.FC = () => {
   const [customCategory, setCustomCategory] = useState<SubjectCategory | 'All'>('All');
   const [customCount, setCustomCount] = useState<10 | 20 | 50>(50);
   const [customDifficulty, setCustomDifficulty] = useState<DifficultyLevel | 'All'>('Medium');
+
+  // PDF Export Engine State
+  const [isPdfDialogOpen, setIsPdfDialogOpen] = useState<boolean>(false);
+  const [pdfScope, setPdfScope] = useState<'all-50-sets' | 'single-set' | 'all-10k'>('all-50-sets');
+  const [pdfSetNum, setPdfSetNum] = useState<number>(1);
 
   const allSetMetas = useMemo(() => getAllSangathitSasthaSetMetas(), []);
   const totalQuestionsCount = useMemo(() => getSangathitTotalQuestionCount(), []);
@@ -434,6 +443,57 @@ export const PublicEnterprisesScreen: React.FC = () => {
       {activeView === 'sets' && (
         <div className="space-y-6">
           
+          {/* Official PDF Export Engine Master Banner */}
+          <div className="p-4 sm:p-5 rounded-3xl bg-gradient-to-r from-[#0F2942] via-slate-900 to-[#0F2942] text-white border border-blue-900/60 shadow-lg flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+            <div className="flex items-center gap-3.5">
+              <div className="p-3 rounded-2xl bg-[#E63946] text-white shadow-md shrink-0">
+                <Building2 className="w-6 h-6" />
+              </div>
+              <div>
+                <div className="flex flex-wrap items-center gap-2">
+                  <h3 className="text-sm sm:text-base font-black text-white">
+                    ५० Pre-Test सेटहरू आधिकारिक A4 PDF डाउनलोड
+                  </h3>
+                  <span className="px-2 py-0.5 rounded-full bg-white/20 text-white text-[10px] font-mono font-bold">
+                    ५० सेट • २,५०० MCQs
+                  </span>
+                </div>
+                <p className="text-xs text-blue-200 mt-1 max-w-xl">
+                  १० पाठ्यक्रम मोड्युल, द्विभाषी प्रश्नोत्तर, वाटरमार्क, आधिकारिक हेडर र पूर्ण उत्तरकुञ्जी सहित A4 ढाँचामा तत्काल प्रिन्ट वा सेभ गर्नुहोस्।
+                </p>
+              </div>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-2.5 w-full md:w-auto">
+              <button
+                type="button"
+                id="btn-export-50-sets-pdf-banner"
+                onClick={() => {
+                  setPdfScope('all-50-sets');
+                  setIsPdfDialogOpen(true);
+                }}
+                className="w-full sm:w-auto px-5 py-2.5 rounded-2xl bg-[#E63946] hover:bg-[#C8102E] text-white font-black text-xs sm:text-sm flex items-center justify-center gap-2 shadow-md transition cursor-pointer active:scale-95 whitespace-nowrap"
+              >
+                <FileDown className="w-4 h-4" />
+                <span>५० Pre-Test सेटहरू PDF डाउनलोड</span>
+              </button>
+
+              <button
+                type="button"
+                id="btn-export-10k-pdf-banner"
+                onClick={() => {
+                  setPdfScope('all-10k');
+                  setIsPdfDialogOpen(true);
+                }}
+                className="w-full sm:w-auto px-4 py-2.5 rounded-2xl bg-white/10 hover:bg-white/20 text-white font-bold text-xs flex items-center justify-center gap-2 border border-white/20 transition cursor-pointer whitespace-nowrap"
+                title="१०,०००+ प्रश्न भण्डार PDF डाउनलोड गर्नुहोस्"
+              >
+                <Printer className="w-4 h-4 text-amber-300" />
+                <span>१०,०००+ प्रश्न भण्डार PDF</span>
+              </button>
+            </div>
+          </div>
+
           {/* Quick Filter & Search Bar */}
           <div className="bg-white dark:bg-slate-900 rounded-3xl p-4 sm:p-5 border border-slate-200 dark:border-slate-800 shadow-xs space-y-4">
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
@@ -655,12 +715,27 @@ export const PublicEnterprisesScreen: React.FC = () => {
                     </div>
                   </div>
 
-                  {/* CTA Button */}
-                  <div className="pt-4 mt-2">
+                  {/* CTA Button & Individual Set PDF */}
+                  <div className="pt-4 mt-2 flex items-center gap-2">
+                    <button
+                      type="button"
+                      id={`btn-card-pdf-${set.setNumber}`}
+                      onClick={() => {
+                        setPdfScope('single-set');
+                        setPdfSetNum(set.setNumber);
+                        setIsPdfDialogOpen(true);
+                      }}
+                      className="py-3 px-3.5 rounded-2xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-bold text-xs flex items-center justify-center gap-1.5 transition cursor-pointer"
+                      title={`सेट ${set.setNumber} A4 PDF डाउनलोड`}
+                    >
+                      <Download className="w-4 h-4 text-red-500" />
+                      <span>PDF</span>
+                    </button>
+
                     <button
                       type="button"
                       onClick={() => handleLaunchSet(set.setNumber)}
-                      className={`w-full py-3 rounded-2xl text-white font-black text-xs sm:text-sm flex items-center justify-center gap-2 shadow-xs transition-all active:scale-95 cursor-pointer ${
+                      className={`flex-1 py-3 rounded-2xl text-white font-black text-xs sm:text-sm flex items-center justify-center gap-2 shadow-xs transition-all active:scale-95 cursor-pointer ${
                         isBanking
                           ? 'bg-slate-900 dark:bg-slate-800 hover:bg-emerald-600 dark:hover:bg-emerald-600 group-hover:bg-emerald-600'
                           : isLoksewa
@@ -670,7 +745,7 @@ export const PublicEnterprisesScreen: React.FC = () => {
                     >
                       <Play className="w-4 h-4 fill-white" />
                       <span>
-                        {isBanking ? 'सेट सुरु गर्नुहोस् (Start Banking Set)' : isLoksewa ? 'सेट सुरु गर्नुहोस् (Start Loksewa Set)' : 'सेट सुरु गर्नुहोस् (Start Pre-Test)'}
+                        {isBanking ? 'सेट सुरु गर्नुहोस्' : isLoksewa ? 'सेट सुरु गर्नुहोस्' : 'सेट सुरु गर्नुहोस्'}
                       </span>
                     </button>
                   </div>
@@ -857,6 +932,15 @@ export const PublicEnterprisesScreen: React.FC = () => {
         </div>
       )}
 
+      {/* PDF Generation Engine Dialog */}
+      {isPdfDialogOpen && (
+        <PdfExportDialog
+          isOpen={isPdfDialogOpen}
+          onClose={() => setIsPdfDialogOpen(false)}
+          defaultScope={pdfScope}
+          defaultSetNumber={pdfSetNum}
+        />
+      )}
     </div>
   );
 };

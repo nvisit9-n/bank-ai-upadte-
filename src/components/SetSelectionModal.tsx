@@ -10,7 +10,10 @@ import {
   Layers,
   Filter,
   CheckCircle2,
-  Award
+  Award,
+  FileDown,
+  Printer,
+  Download
 } from 'lucide-react';
 import { 
   getAllSangathitSasthaSetMetas, 
@@ -18,6 +21,7 @@ import {
   SangathitSetMeta 
 } from '../data/questionBank';
 import { useApp } from '../context/AppContext';
+import { PdfExportDialog } from './modals/PdfExportDialog';
 
 export interface SetSelectionModalProps {
   isOpen: boolean;
@@ -37,6 +41,11 @@ export const SetSelectionModal: React.FC<SetSelectionModalProps> = ({
   const { addToast, requireAuth } = useApp();
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [filterDifficulty, setFilterDifficulty] = useState<string>('All');
+
+  // PDF Export State
+  const [isPdfDialogOpen, setIsPdfDialogOpen] = useState<boolean>(false);
+  const [pdfScope, setPdfScope] = useState<'all-50-sets' | 'single-set' | 'all-10k'>('all-50-sets');
+  const [pdfSetNum, setPdfSetNum] = useState<number>(1);
 
   const allSetMetas = useMemo(() => getAllSangathitSasthaSetMetas(), []);
   const totalQuestionsCount = useMemo(() => getSangathitTotalQuestionCount(), []);
@@ -113,16 +122,33 @@ export const SetSelectionModal: React.FC<SetSelectionModalProps> = ({
             </div>
           </div>
 
-          <button
-            type="button"
-            id="close-set-selection-modal-btn"
-            onClick={onClose}
-            className="p-1.5 sm:p-2 rounded-xl bg-white/10 hover:bg-white/20 text-white transition cursor-pointer shrink-0"
-            title="बन्द गर्नुहोस्"
-            aria-label="Close modal"
-          >
-            <X className="w-4 h-4 sm:w-5 sm:h-5" />
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              id="export-all-50-sets-pdf-btn"
+              onClick={() => {
+                setPdfScope('all-50-sets');
+                setIsPdfDialogOpen(true);
+              }}
+              className="px-3 py-1.5 rounded-xl bg-white/20 hover:bg-white/30 text-white font-black text-xs flex items-center gap-1.5 transition cursor-pointer border border-white/30 shadow-xs"
+              title="५० वटै Pre-Test सेटहरू A4 PDF डाउनलोड गर्नुहोस्"
+            >
+              <FileDown className="w-4 h-4 text-red-300" />
+              <span className="hidden sm:inline">५० Pre-Test सेटहरू PDF डाउनलोड</span>
+              <span className="sm:hidden">५० सेट PDF</span>
+            </button>
+
+            <button
+              type="button"
+              id="close-set-selection-modal-btn"
+              onClick={onClose}
+              className="p-1.5 sm:p-2 rounded-xl bg-white/10 hover:bg-white/20 text-white transition cursor-pointer shrink-0"
+              title="बन्द गर्नुहोस्"
+              aria-label="Close modal"
+            >
+              <X className="w-4 h-4 sm:w-5 sm:h-5" />
+            </button>
+          </div>
         </div>
 
         {/* Filter & Search Bar */}
@@ -226,33 +252,76 @@ export const SetSelectionModal: React.FC<SetSelectionModalProps> = ({
                   </div>
                 </div>
 
-                <button
-                  type="button"
-                  id={`btn-start-${set.id}`}
-                  onClick={() => handleStartSet(set.id)}
-                  className="mt-3 w-full py-2.5 rounded-xl bg-[#DC2626] hover:bg-[#B91C1C] text-white font-black text-xs flex items-center justify-center gap-1.5 shadow-md shadow-red-950/20 transition cursor-pointer active:scale-95"
-                >
-                  <Play className="w-3.5 h-3.5 fill-current" />
-                  <span>सेट {set.setNumber} सुरु गर्नुहोस्</span>
-                </button>
+                <div className="mt-3 flex items-center gap-2">
+                  <button
+                    type="button"
+                    id={`btn-pdf-${set.id}`}
+                    onClick={() => {
+                      setPdfScope('single-set');
+                      setPdfSetNum(set.setNumber);
+                      setIsPdfDialogOpen(true);
+                    }}
+                    className="py-2.5 px-3 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-700/60 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-bold text-xs flex items-center justify-center gap-1 transition cursor-pointer"
+                    title={`सेट ${set.setNumber} A4 PDF डाउनलोड`}
+                  >
+                    <Download className="w-3.5 h-3.5 text-red-500" />
+                    <span>PDF</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    id={`btn-start-${set.id}`}
+                    onClick={() => handleStartSet(set.id)}
+                    className="flex-1 py-2.5 rounded-xl bg-[#DC2626] hover:bg-[#B91C1C] text-white font-black text-xs flex items-center justify-center gap-1.5 shadow-md shadow-red-950/20 transition cursor-pointer active:scale-95"
+                  >
+                    <Play className="w-3.5 h-3.5 fill-current" />
+                    <span>सेट {set.setNumber} सुरु गर्नुहोस्</span>
+                  </button>
+                </div>
               </div>
             ))
           )}
         </div>
 
         {/* Modal Footer */}
-        <div className="p-3 sm:p-4 bg-slate-50 dark:bg-slate-800/80 border-t border-slate-200 dark:border-slate-700/80 flex items-center justify-between text-xs text-slate-500 dark:text-slate-400 shrink-0">
+        <div className="p-3 sm:p-4 bg-slate-50 dark:bg-slate-800/80 border-t border-slate-200 dark:border-slate-700/80 flex flex-wrap items-center justify-between gap-2 text-xs text-slate-500 dark:text-slate-400 shrink-0">
           <span>देखाउँदै: {filteredSets.length} / ५० सेटहरू (कुल {totalQuestionsCount.toLocaleString()} MCQs)</span>
-          <button
-            type="button"
-            id="dismiss-set-selection-modal-btn"
-            onClick={onClose}
-            className="px-4 py-1.5 rounded-xl bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 font-bold hover:bg-slate-300 dark:hover:bg-slate-600 transition cursor-pointer"
-          >
-            बन्द गर्नुहोस्
-          </button>
+
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              id="footer-export-all-pdf-btn"
+              onClick={() => {
+                setPdfScope('all-50-sets');
+                setIsPdfDialogOpen(true);
+              }}
+              className="px-3.5 py-1.5 rounded-xl bg-[#0F2942] hover:bg-[#1A3A5F] text-white font-bold text-xs flex items-center gap-1.5 transition cursor-pointer shadow-xs"
+            >
+              <FileDown className="w-3.5 h-3.5 text-red-400" />
+              <span>५० Pre-Test सेटहरू PDF</span>
+            </button>
+
+            <button
+              type="button"
+              id="dismiss-set-selection-modal-btn"
+              onClick={onClose}
+              className="px-4 py-1.5 rounded-xl bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 font-bold hover:bg-slate-300 dark:hover:bg-slate-600 transition cursor-pointer"
+            >
+              बन्द गर्नुहोस्
+            </button>
+          </div>
         </div>
       </div>
+
+      {/* PDF Generation Engine Dialog */}
+      {isPdfDialogOpen && (
+        <PdfExportDialog
+          isOpen={isPdfDialogOpen}
+          onClose={() => setIsPdfDialogOpen(false)}
+          defaultScope={pdfScope}
+          defaultSetNumber={pdfSetNum}
+        />
+      )}
     </div>
   );
 };

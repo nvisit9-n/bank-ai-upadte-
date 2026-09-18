@@ -35,7 +35,11 @@ import {
   ToggleRight,
   Filter,
   Save,
-  Mail
+  Mail,
+  FileDown,
+  Printer,
+  Building2,
+  BookOpen
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { Question, StudyNote, UserProfile, SubjectCategory } from '../../types';
@@ -49,6 +53,7 @@ import {
   DownloadEventRecord, 
   ExamScoreRecord 
 } from '../../services/activityTrackingService';
+import { PdfExportDialog } from './PdfExportDialog';
 import { AdminAnalyticsService } from '../../services/adminAnalyticsService';
 
 export const AdminModal: React.FC = () => {
@@ -93,6 +98,10 @@ export const AdminModal: React.FC = () => {
   const [recentExamScores, setRecentExamScores] = useState<ExamScoreRecord[]>([]);
   const [isLoadingTracking, setIsLoadingTracking] = useState<boolean>(false);
   const [activityFilter, setActivityFilter] = useState<'students' | 'all'>('students');
+
+  // PDF Generation Engine State
+  const [isPdfDialogOpen, setIsPdfDialogOpen] = useState<boolean>(false);
+  const [pdfDialogScope, setPdfDialogScope] = useState<'all-50-sets' | 'single-set' | 'all-10k' | 'admin-cms'>('all-10k');
 
   // Load real-time visitor metrics from backend
   const loadVisitorStats = async () => {
@@ -995,7 +1004,46 @@ export const AdminModal: React.FC = () => {
                   </select>
                 </div>
 
-                <div className="flex items-center gap-2">
+                <div className="flex flex-wrap items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setPdfDialogScope('all-10k');
+                      setIsPdfDialogOpen(true);
+                    }}
+                    className="px-3.5 py-2 rounded-xl bg-[#0F2942] hover:bg-[#1A3A5F] text-white text-xs font-bold transition flex items-center gap-1.5 shadow-sm cursor-pointer"
+                    title="१०,०००+ सम्पूर्ण प्रश्न भण्डार PDF डाउनलोड"
+                  >
+                    <FileDown className="w-4 h-4 text-red-400" />
+                    <span>Export All Question Bank to PDF (१०,०००+)</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setPdfDialogScope('all-50-sets');
+                      setIsPdfDialogOpen(true);
+                    }}
+                    className="px-3 py-2 rounded-xl bg-[#E63946] hover:bg-[#C8102E] text-white text-xs font-bold transition flex items-center gap-1.5 shadow-sm cursor-pointer"
+                    title="५० Pre-Test सेटहरू PDF डाउनलोड"
+                  >
+                    <Building2 className="w-4 h-4" />
+                    <span>५० Pre-Test सेटहरू PDF</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setPdfDialogScope('admin-cms');
+                      setIsPdfDialogOpen(true);
+                    }}
+                    className="px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 hover:bg-slate-100 text-xs font-bold transition flex items-center gap-1.5 shadow-sm cursor-pointer"
+                    title="हालका CMS प्रश्नहरू PDF"
+                  >
+                    <Printer className="w-3.5 h-3.5 text-slate-500" />
+                    <span>CMS प्रश्नहरू PDF ({questions.length})</span>
+                  </button>
+
                   <button
                     onClick={() => {
                       setEditingQuestion(null);
@@ -1911,6 +1959,16 @@ export const AdminModal: React.FC = () => {
         </div>
 
       </div>
+
+      {/* PDF Generation Engine Dialog */}
+      {isPdfDialogOpen && (
+        <PdfExportDialog
+          isOpen={isPdfDialogOpen}
+          onClose={() => setIsPdfDialogOpen(false)}
+          defaultScope={pdfDialogScope}
+          adminQuestions={questions}
+        />
+      )}
     </div>
   );
 };

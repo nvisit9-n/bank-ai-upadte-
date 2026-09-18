@@ -32,7 +32,6 @@ import { AdminPinModal } from '../modals/AdminPinModal';
 import { StudentProfileModal } from '../StudentProfileModal';
 import { LoginModal } from '../auth/LoginModal';
 import { MASTER_ADMIN_PIN } from '../../utils/sanitizer';
-import { FloatingAiTutorButton } from '../ai/FloatingAiTutorButton';
 import { PWAInstallPrompt } from '../pwa/PWAInstallPrompt';
 
 export interface AppLayoutProps {
@@ -95,9 +94,6 @@ export const AppLayout: React.FC<AppLayoutProps> = () => {
 
       {/* Mobile Bottom Navigation */}
       <BottomNav />
-
-      {/* Floating AI Tutor Action Button (Mobile & Desktop) */}
-      <FloatingAiTutorButton />
 
       {/* Mobile PWA Install Prompt Banner */}
       <PWAInstallPrompt />

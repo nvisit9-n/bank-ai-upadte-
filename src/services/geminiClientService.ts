@@ -187,7 +187,7 @@ async function streamDirectFromGemini(
   options: StreamAiOptions
 ): Promise<string> {
   const { query, history = [], attachment, level = 'level4-5', mode = 'general', onChunk, signal } = options;
-  const candidateModels = ['gemini-2.5-flash', 'gemini-3.1-flash-lite', 'gemini-2.5-pro', 'gemini-1.5-flash'];
+  const candidateModels = ['gemini-3.1-flash-lite', 'gemini-3.8-flash', 'gemini-flash-latest'];
 
   const systemPrompt = `You are an elite, highly authoritative AI Examination Mentor and Faculty for Nepal Loksewa, Banking (NRB, RBB, NBL, ADBL Levels 4-10), and Public Enterprises (EPF, CIT, SSF, NEA, NTC, NOC, 45+ entities), operating with official Gemini 1.5 Pro and ChatGPT-4o caliber.
 Exam Level context: ${level}. Mode: ${mode}.
@@ -508,7 +508,7 @@ export async function generateNotesWithAutoRetry(params: {
   // 2. Try direct Gemini API if client-side key exists
   const clientKey = getEffectiveGeminiApiKey();
   if (clientKey) {
-    const candidateModels = ['gemini-2.5-flash', 'gemini-3.1-flash-lite', 'gemini-2.5-pro'];
+    const candidateModels = ['gemini-3.1-flash-lite', 'gemini-3.8-flash', 'gemini-flash-latest'];
     const prompt = `Generate comprehensive exam notes on the topic: "${topic}".
 Target Exam Level: ${examLevel}
 Language Preference: ${language}

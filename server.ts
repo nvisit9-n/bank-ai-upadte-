@@ -188,7 +188,7 @@ Target Exam Level: ${examLevel}
 Language Preference: ${language}
 Format Style: ${format}`;
 
-        const noteModels = ["gemini-1.5-flash", "gemini-2.5-flash", "gemini-3.8-flash"];
+        const noteModels = ["gemini-3.1-flash-lite", "gemini-3.8-flash", "gemini-flash-latest"];
         for (const modelName of noteModels) {
           try {
             const response = await ai.models.generateContent({
@@ -570,7 +570,7 @@ app.post("/api/ai-assistant-stream", async (req, res) => {
   });
 
   if (ai) {
-    const candidateModels = ["gemini-2.5-flash", "gemini-3.1-flash-lite", "gemini-2.5-pro", "gemini-1.5-flash"];
+    const candidateModels = ["gemini-3.1-flash-lite", "gemini-3.8-flash", "gemini-flash-latest"];
     const contents = buildGeminiContents(cleanQuery, history, activeAttachment);
 
     for (const modelName of candidateModels) {
@@ -581,10 +581,7 @@ app.post("/api/ai-assistant-stream", async (req, res) => {
           contents,
           config: {
             systemInstruction: effectiveSystemInstruction,
-            temperature: 0.3,
-            thinkingConfig: {
-              thinkingLevel: "LOW" as any
-            }
+            temperature: 0.3
           }
         });
 
@@ -657,7 +654,7 @@ app.post("/api/ai-assistant", async (req, res) => {
     const effectiveSystemInstruction = getAiSystemInstruction(level, mode, cleanQuery);
 
     if (ai) {
-      const candidateModels = ["gemini-2.5-flash", "gemini-3.1-flash-lite", "gemini-2.5-pro", "gemini-1.5-flash"];
+      const candidateModels = ["gemini-3.1-flash-lite", "gemini-3.8-flash", "gemini-flash-latest"];
       const contents = buildGeminiContents(cleanQuery, history, activeAttachment);
 
       for (const modelName of candidateModels) {
@@ -667,10 +664,7 @@ app.post("/api/ai-assistant", async (req, res) => {
             contents,
             config: {
               systemInstruction: effectiveSystemInstruction,
-              temperature: 0.3,
-              thinkingConfig: {
-                thinkingLevel: "LOW" as any
-              }
+              temperature: 0.3
             },
           });
 
